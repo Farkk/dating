@@ -1,0 +1,4 @@
+DirectoryIndex index.php index.html index.htm
+AddDefaultCharset UTF-8
+AddCharset UTF-8 .html .php .css .js
+php_value default_charset UTF-8 

@@ -1,0 +1,46 @@
+# Uploaded files
+uploads/
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.pdf
+
+# Logs
+*.log
+server.log
+error.log
+
+# IDE and Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Temporary files
+*.tmp
+*.bak
+*.cache
+
+# PHP
+vendor/
+composer.lock
+
+# Configuration files with sensitive data (if needed, uncomment)
+# config/db.php
+# config/vk_config.php
+
+# Test files
+test_*.php
+*_test.php
+
+# Node modules (if using any frontend tools)
+node_modules/
+package-lock.json
+
+# Environment files
+.env
+.env.local
+.env.production

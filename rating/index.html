@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css?family=Inter&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans+Hebrew&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+    <title>Рейтинг пользователей</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            background-color: #ff4081;
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .nav-logo {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-link:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background: white;
+            bottom: -5px;
+            left: 0;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover:after {
+            width: 100%;
+        }
+        
+        .main {
+            max-width: 1200px;
+            margin: 6rem auto 2rem;
+            padding: 0 2rem;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin: 2rem 0;
+            font-size: 2rem;
+            color: #ff4081;
+        }
+        
+        .leaderboard {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .leaderboard-header {
+            background: #ff4081;
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .leaderboard-title {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .leaderboard-description {
+            margin-top: 0.5rem;
+            opacity: 0.9;
+        }
+        
+        .leaderboard-filter {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            background: white;
+            border: 2px solid #ff4081;
+            color: #ff4081;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .filter-btn:hover {
+            background: #ff4081;
+            color: white;
+        }
+        
+        .filter-btn.active {
+            background: #ff4081;
+            color: white;
+        }
+        
+        .ranking-container {
+            padding: 0 1rem;
+        }
+        
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid #f0f0f0;
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+        
+        .ranking-item:hover {
+            transform: translateX(5px);
+            background: #ffebf3;
+        }
+        
+        .ranking-item:last-child {
+            border-bottom: none;
+        }
+        
+        .ranking-position {
+            font-size: 1.5rem;
+            font-weight: bold;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .ranking-position-1 {
+            background: gold;
+            color: #333;
+        }
+        
+        .ranking-position-2 {
+            background: silver;
+            color: #333;
+        }
+        
+        .ranking-position-3 {
+            background: #cd7f32; /* бронза */
+            color: white;
+        }
+        
+        .ranking-user {
+            display: flex;
+            flex: 1;
+            align-items: center;
+        }
+        
+        .ranking-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 1rem;
+            object-fit: cover;
+            border: 3px solid #ff4081;
+        }
+        
+        .ranking-details {
+            flex: 1;
+        }
+        
+        .ranking-name {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+            color: #333;
+        }
+        
+        .ranking-stats {
+            display: flex;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .ranking-stat {
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .ranking-stat i {
+            margin-right: 0.5rem;
+            color: #ff4081;
+        }
+        
+        .ranking-score {
+            margin-left: auto;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ff4081;
+            background: #ffebf3;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: #ff4081;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background: #e6366f;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-logo animate__animated animate__fadeIn">Dating Site</div>
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link animate__animated animate__fadeIn">Главная</a>
+                <a href="../find/index.html" class="nav-link animate__animated animate__fadeIn">Найти пару</a>
+                <a href="#" class="nav-link animate__animated animate__fadeIn" style="font-weight: bold;">Рейтинг</a>
+                <a href="../user/index.html" class="nav-link animate__animated animate__fadeIn">Профиль</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main">
+        <h1 class="section-title animate__animated animate__bounceIn">Рейтинг пользователей</h1>
+        
+        <div class="leaderboard animate__animated animate__fadeIn">
+            <div class="leaderboard-header">
+                <h2 class="leaderboard-title">Топ пользователей по количеству встреч</h2>
+                <p class="leaderboard-description">Пользователи с самым большим количеством успешных встреч</p>
+            </div>
+            
+            <div class="leaderboard-filter">
+                <button class="filter-btn active animate__animated animate__fadeIn" style="animation-delay: 0.2s">Все</button>
+                <button class="filter-btn animate__animated animate__fadeIn" style="animation-delay: 0.3s">Женщины</button>
+                <button class="filter-btn animate__animated animate__fadeIn" style="animation-delay: 0.4s">Мужчины</button>
+                <button class="filter-btn animate__animated animate__fadeIn" style="animation-delay: 0.5s">Этот месяц</button>
+            </div>
+            
+            <div class="ranking-container">
+                <div class="ranking-item animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+                    <div class="ranking-position ranking-position-1">1</div>
+                    <div class="ranking-user">
+                        <img src="images/v1248_1060.png" alt="Вероника" class="ranking-avatar">
+                        <div class="ranking-details">
+                            <div class="ranking-name">Вероника</div>
+                            <div class="ranking-stats">
+                                <div class="ranking-stat"><i class="fas fa-map-marker-alt"></i> Москва</div>
+                                <div class="ranking-stat"><i class="fas fa-birthday-cake"></i> 23 года</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ranking-score">124 встречи</div>
+                </div>
+                
+                <div class="ranking-item animate__animated animate__fadeInUp" style="animation-delay: 0.3s">
+                    <div class="ranking-position ranking-position-2">2</div>
+                    <div class="ranking-user">
+                        <img src="images/v1248_1080.png" alt="Екатерина" class="ranking-avatar">
+                        <div class="ranking-details">
+                            <div class="ranking-name">Екатерина</div>
+                            <div class="ranking-stats">
+                                <div class="ranking-stat"><i class="fas fa-map-marker-alt"></i> Санкт-Петербург</div>
+                                <div class="ranking-stat"><i class="fas fa-birthday-cake"></i> 25 лет</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ranking-score">108 встреч</div>
+                </div>
+                
+                <div class="ranking-item animate__animated animate__fadeInUp" style="animation-delay: 0.4s">
+                    <div class="ranking-position ranking-position-3">3</div>
+                    <div class="ranking-user">
+                        <img src="images/v1248_1211.png" alt="Ксения" class="ranking-avatar">
+                        <div class="ranking-details">
+                            <div class="ranking-name">Ксения</div>
+                            <div class="ranking-stats">
+                                <div class="ranking-stat"><i class="fas fa-map-marker-alt"></i> Москва</div>
+                                <div class="ranking-stat"><i class="fas fa-birthday-cake"></i> 27 лет</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ranking-score">100 встреч</div>
+                </div>
+                
+                <div class="ranking-item animate__animated animate__fadeInUp" style="animation-delay: 0.5s">
+                    <div class="ranking-position">4</div>
+                    <div class="ranking-user">
+                        <img src="images/v1248_1200.png" alt="Николай" class="ranking-avatar">
+                        <div class="ranking-details">
+                            <div class="ranking-name">Николай</div>
+                            <div class="ranking-stats">
+                                <div class="ranking-stat"><i class="fas fa-map-marker-alt"></i> Казань</div>
+                                <div class="ranking-stat"><i class="fas fa-birthday-cake"></i> 29 лет</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ranking-score">94 встречи</div>
+                </div>
+                
+                <div class="ranking-item animate__animated animate__fadeInUp" style="animation-delay: 0.6s">
+                    <div class="ranking-position">5</div>
+                    <div class="ranking-user">
+                        <img src="images/v1248_1212.png" alt="Мария" class="ranking-avatar">
+                        <div class="ranking-details">
+                            <div class="ranking-name">Мария</div>
+                            <div class="ranking-stats">
+                                <div class="ranking-stat"><i class="fas fa-map-marker-alt"></i> Москва</div>
+                                <div class="ranking-stat"><i class="fas fa-birthday-cake"></i> 24 года</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ranking-score">90 встреч</div>
+                </div>
+                
+                <div class="ranking-item animate__animated animate__fadeInUp" style="animation-delay: 0.7s">
+                    <div class="ranking-position">6</div>
+                    <div class="ranking-user">
+                        <img src="images/v1248_1049.png" alt="Дмитрий" class="ranking-avatar">
+                        <div class="ranking-details">
+                            <div class="ranking-name">Дмитрий</div>
+                            <div class="ranking-stats">
+                                <div class="ranking-stat"><i class="fas fa-map-marker-alt"></i> Санкт-Петербург</div>
+                                <div class="ranking-stat"><i class="fas fa-birthday-cake"></i> 31 год</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ranking-score">75 встреч</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center">
+            <a href="#" class="btn animate__animated animate__pulse animate__infinite">Показать больше</a>
+        </div>
+    </main>
+    
+    <footer class="footer">
+        <p>&copy; 2025 Dating Site. Все права защищены.</p>
+    </footer>
+</body>
+</html>
