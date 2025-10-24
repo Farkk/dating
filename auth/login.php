@@ -56,30 +56,15 @@
       font-size: 14px;
     }
 
-    .vk-button {
+    #vk-auth-widget {
       display: flex;
-      align-items: center;
       justify-content: center;
-      gap: 15px;
-      background: #0077FF;
-      color: white;
-      padding: 15px 30px;
-      border-radius: 10px;
-      text-decoration: none;
-      font-size: 16px;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0, 119, 255, 0.3);
+      margin: 20px 0;
+      min-height: 48px;
     }
 
-    .vk-button:hover {
-      background: #0066DD;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 119, 255, 0.4);
-    }
-
-    .vk-button i {
-      font-size: 24px;
+    #vk-auth-widget iframe {
+      border-radius: 8px !important;
     }
 
     .divider {
@@ -142,24 +127,64 @@
     <h1>Добро пожаловать!</h1>
     <p class="subtitle">Найди свою вторую половинку</p>
 
-    <?php
-    require_once '../config/vk_config.php';
+    <?php require_once '../config/vk_config.php'; ?>
 
-    // Формируем URL для авторизации ВКонтакте
-    $vk_auth_url = 'https://oauth.vk.com/authorize?' . http_build_query([
-      'client_id' => VK_APP_ID,
-      'redirect_uri' => VK_REDIRECT_URI,
-      'display' => 'page',
-      'scope' => 'email,photos', // Запрашиваем доступ к email и фотографиям
-      'response_type' => 'code',
-      'v' => VK_API_VERSION
-    ]);
-    ?>
+    <!-- VK ID SDK Widget Container -->
+    <div id="vk-auth-widget"></div>
 
-    <a href="<?= htmlspecialchars($vk_auth_url) ?>" class="vk-button">
-      <i class="fab fa-vk"></i>
-      Войти через ВКонтакте
-    </a>
+    <script src="https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js"></script>
+    <script type="text/javascript">
+      if ('VKIDSDK' in window) {
+        const VKID = window.VKIDSDK;
+
+        VKID.Config.init({
+          app: <?= VK_APP_ID ?>,
+          redirectUrl: '<?= VK_REDIRECT_URI ?>',
+          responseMode: VKID.ConfigResponseMode.Callback,
+          source: VKID.ConfigSource.LOWCODE,
+          scope: 'email phone',
+        });
+
+        const oneTap = new VKID.OneTap();
+
+        oneTap.render({
+          container: document.getElementById('vk-auth-widget'),
+          showAlternativeLogin: true,
+          styles: {
+            width: 320,
+            height: 48,
+            borderRadius: 8
+          }
+        })
+        .on(VKID.WidgetEvents.ERROR, vkidOnError)
+        .on(VKID.OneTapInternalEvents.LOGIN_SUCCESS, function (payload) {
+          const code = payload.code;
+          const deviceId = payload.device_id;
+
+          // Обмениваем код на токен через VK ID SDK
+          VKID.Auth.exchangeCode(code, deviceId)
+            .then(vkidOnSuccess)
+            .catch(vkidOnError);
+        });
+
+        function vkidOnSuccess(data) {
+          console.log('VK ID Success:', data);
+
+          // Перенаправляем на callback с полученным кодом
+          if (data.code) {
+            window.location.href = '<?= VK_REDIRECT_URI ?>?code=' + data.code + '&device_id=' + data.device_id;
+          } else if (data.access_token) {
+            // Если получили токен напрямую, перенаправляем с токеном
+            window.location.href = 'vk_callback.php?access_token=' + data.access_token + '&user_id=' + data.user_id;
+          }
+        }
+
+        function vkidOnError(error) {
+          console.error('VK ID Error:', error);
+          alert('Ошибка авторизации через VK ID. Попробуйте еще раз.');
+        }
+      }
+    </script>
 
     <div class="features">
       <div class="feature">

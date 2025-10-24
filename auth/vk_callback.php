@@ -4,31 +4,37 @@ session_start();
 require_once '../config/db.php';
 require_once '../config/vk_config.php';
 
-// Проверяем наличие кода авторизации
-if (!isset($_GET['code'])) {
-    die('Ошибка авторизации: код не получен');
+// Проверяем, получили ли мы токен напрямую (от VK ID SDK)
+if (isset($_GET['access_token']) && isset($_GET['user_id'])) {
+    $access_token = $_GET['access_token'];
+    $vk_user_id = $_GET['user_id'];
+    $email = $_GET['email'] ?? null;
 }
+// Или получили код для обмена на токен (стандартный OAuth)
+elseif (isset($_GET['code'])) {
+    $code = $_GET['code'];
 
-$code = $_GET['code'];
+    // Обмениваем код на access token
+    $token_url = 'https://oauth.vk.com/access_token?' . http_build_query([
+        'client_id' => VK_APP_ID,
+        'client_secret' => VK_APP_SECRET,
+        'redirect_uri' => VK_REDIRECT_URI,
+        'code' => $code
+    ]);
 
-// Обмениваем код на access token
-$token_url = 'https://oauth.vk.com/access_token?' . http_build_query([
-    'client_id' => VK_APP_ID,
-    'client_secret' => VK_APP_SECRET,
-    'redirect_uri' => VK_REDIRECT_URI,
-    'code' => $code
-]);
+    $token_response = file_get_contents($token_url);
+    $token_data = json_decode($token_response, true);
 
-$token_response = file_get_contents($token_url);
-$token_data = json_decode($token_response, true);
+    if (!isset($token_data['access_token'])) {
+        die('Ошибка получения токена доступа: ' . ($token_data['error_description'] ?? 'Неизвестная ошибка'));
+    }
 
-if (!isset($token_data['access_token'])) {
-    die('Ошибка получения токена доступа');
+    $access_token = $token_data['access_token'];
+    $vk_user_id = $token_data['user_id'];
+    $email = $token_data['email'] ?? null;
+} else {
+    die('Ошибка авторизации: не получены данные для входа');
 }
-
-$access_token = $token_data['access_token'];
-$vk_user_id = $token_data['user_id'];
-$email = $token_data['email'] ?? null;
 
 // Получаем информацию о пользователе через VK API
 $api_url = 'https://api.vk.com/method/users.get?' . http_build_query([
