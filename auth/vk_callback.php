@@ -4,11 +4,22 @@ session_start();
 require_once '../config/db.php';
 require_once '../config/vk_config.php';
 
-// Проверяем, получили ли мы токен напрямую (от VK ID SDK)
+// Проверяем, получили ли мы данные напрямую от VK ID SDK
 if (isset($_GET['access_token']) && isset($_GET['user_id'])) {
     $access_token = $_GET['access_token'];
     $vk_user_id = $_GET['user_id'];
     $email = $_GET['email'] ?? null;
+
+    // Если получили готовые данные пользователя от VK ID SDK, используем их
+    $vk_user_from_sdk = null;
+    if (isset($_GET['first_name']) && isset($_GET['last_name'])) {
+        $vk_user_from_sdk = [
+            'id' => $vk_user_id,
+            'first_name' => $_GET['first_name'],
+            'last_name' => $_GET['last_name'],
+            'photo_max_orig' => $_GET['photo'] ?? null
+        ];
+    }
 }
 // Или получили код для обмена на токен (стандартный OAuth)
 elseif (isset($_GET['code'])) {
@@ -36,22 +47,43 @@ elseif (isset($_GET['code'])) {
     die('Ошибка авторизации: не получены данные для входа');
 }
 
-// Получаем информацию о пользователе через VK API
-$api_url = 'https://api.vk.com/method/users.get?' . http_build_query([
-    'user_ids' => $vk_user_id,
-    'fields' => 'photo_max_orig,bdate,city,sex,about',
-    'access_token' => $access_token,
-    'v' => VK_API_VERSION
-]);
-
-$api_response = file_get_contents($api_url);
-$api_data = json_decode($api_response, true);
-
-if (!isset($api_data['response'][0])) {
-    die('Ошибка получения данных пользователя из ВК');
+// Получаем информацию о пользователе
+// Если данные уже пришли от VK ID SDK, используем их
+if (isset($vk_user_from_sdk) && $vk_user_from_sdk) {
+    $vk_user = $vk_user_from_sdk;
+    error_log("Using user data from VK ID SDK: " . print_r($vk_user, true));
 }
+// Иначе запрашиваем через VK API
+else {
+    $api_url = 'https://api.vk.com/method/users.get?' . http_build_query([
+        'user_ids' => $vk_user_id,
+        'fields' => 'photo_max_orig,bdate,city,sex,about',
+        'access_token' => $access_token,
+        'v' => VK_API_VERSION
+    ]);
 
-$vk_user = $api_data['response'][0];
+    $api_response = file_get_contents($api_url);
+    $api_data = json_decode($api_response, true);
+
+    // Отладочная информация
+    error_log("VK API Response: " . print_r($api_data, true));
+
+    if (!isset($api_data['response'][0])) {
+        // Выводим детальную ошибку для отладки
+        $error_msg = 'Ошибка получения данных пользователя из ВК.<br>';
+        if (isset($api_data['error'])) {
+            $error_msg .= 'Код ошибки: ' . $api_data['error']['error_code'] . '<br>';
+            $error_msg .= 'Описание: ' . $api_data['error']['error_msg'] . '<br>';
+        }
+        $error_msg .= '<br>Отладка:<br>';
+        $error_msg .= 'User ID: ' . htmlspecialchars($vk_user_id) . '<br>';
+        $error_msg .= 'Token (первые 20 символов): ' . htmlspecialchars(substr($access_token, 0, 20)) . '...<br>';
+        $error_msg .= '<br><a href="/auth/login.php">Вернуться к авторизации</a>';
+        die($error_msg);
+    }
+
+    $vk_user = $api_data['response'][0];
+}
 
 // Проверяем, существует ли пользователь в базе
 $stmt = $pdo->prepare("SELECT * FROM users WHERE vk_id = :vk_id LIMIT 1");

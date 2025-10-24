@@ -170,12 +170,27 @@
         function vkidOnSuccess(data) {
           console.log('VK ID Success:', data);
 
-          // Перенаправляем на callback с полученным кодом
-          if (data.code) {
-            window.location.href = '<?= VK_REDIRECT_URI ?>?code=' + data.code + '&device_id=' + data.device_id;
-          } else if (data.access_token) {
-            // Если получили токен напрямую, перенаправляем с токеном
+          // VK ID SDK возвращает данные пользователя и токен
+          if (data.token && data.user) {
+            // Формируем параметры для передачи в callback
+            const params = new URLSearchParams({
+              access_token: data.token,
+              user_id: data.user.id,
+              first_name: data.user.first_name || '',
+              last_name: data.user.last_name || '',
+              email: data.user.email || '',
+              photo: data.user.avatar || ''
+            });
+
+            window.location.href = 'vk_callback.php?' + params.toString();
+          }
+          // Fallback на старый формат
+          else if (data.access_token) {
             window.location.href = 'vk_callback.php?access_token=' + data.access_token + '&user_id=' + data.user_id;
+          }
+          else {
+            console.error('Unexpected data format:', data);
+            alert('Ошибка: неожиданный формат данных от VK ID');
           }
         }
 
