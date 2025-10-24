@@ -142,7 +142,7 @@
           redirectUrl: '<?= VK_REDIRECT_URI ?>',
           responseMode: VKID.ConfigResponseMode.Callback,
           source: VKID.ConfigSource.LOWCODE,
-          scope: 'email phone',
+          scope: '', // VK ID SDK предоставляет базовые данные без дополнительных разрешений
         });
 
         const oneTap = new VKID.OneTap();
@@ -169,6 +169,7 @@
 
         function vkidOnSuccess(data) {
           console.log('VK ID Success:', data);
+          console.log('Full data object:', JSON.stringify(data, null, 2));
 
           // VK ID SDK возвращает данные пользователя и токен
           if (data.token && data.user) {
@@ -179,18 +180,27 @@
               first_name: data.user.first_name || '',
               last_name: data.user.last_name || '',
               email: data.user.email || '',
-              photo: data.user.avatar || ''
+              phone: data.user.phone || '',
+              photo: data.user.avatar || data.user.photo_200 || data.user.photo_100 || ''
             });
+
+            console.log('Redirecting to callback with params:', params.toString());
+            window.location.href = 'vk_callback.php?' + params.toString();
+          }
+          // Fallback: если данные в другом формате
+          else if (data.access_token || data.code) {
+            console.log('Using fallback format');
+            const params = new URLSearchParams();
+            if (data.access_token) params.append('access_token', data.access_token);
+            if (data.code) params.append('code', data.code);
+            if (data.user_id) params.append('user_id', data.user_id);
+            if (data.email) params.append('email', data.email);
 
             window.location.href = 'vk_callback.php?' + params.toString();
           }
-          // Fallback на старый формат
-          else if (data.access_token) {
-            window.location.href = 'vk_callback.php?access_token=' + data.access_token + '&user_id=' + data.user_id;
-          }
           else {
             console.error('Unexpected data format:', data);
-            alert('Ошибка: неожиданный формат данных от VK ID');
+            alert('Ошибка: неожиданный формат данных от VK ID. Проверьте консоль браузера (F12).');
           }
         }
 

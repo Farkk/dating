@@ -17,8 +17,11 @@ if (isset($_GET['access_token']) && isset($_GET['user_id'])) {
             'id' => $vk_user_id,
             'first_name' => $_GET['first_name'],
             'last_name' => $_GET['last_name'],
-            'photo_max_orig' => $_GET['photo'] ?? null
+            'photo_max_orig' => !empty($_GET['photo']) ? $_GET['photo'] : null
         ];
+
+        // Логируем все полученные данные для отладки
+        error_log("VK ID SDK data received: " . print_r($_GET, true));
     }
 }
 // Или получили код для обмена на токен (стандартный OAuth)
@@ -47,42 +50,19 @@ elseif (isset($_GET['code'])) {
     die('Ошибка авторизации: не получены данные для входа');
 }
 
-// Получаем информацию о пользователе
-// Если данные уже пришли от VK ID SDK, используем их
+// Используем данные от VK ID SDK
+// VK ID SDK токен нельзя использовать для серверных запросов из-за привязки к IP
 if (isset($vk_user_from_sdk) && $vk_user_from_sdk) {
     $vk_user = $vk_user_from_sdk;
     error_log("Using user data from VK ID SDK: " . print_r($vk_user, true));
-}
-// Иначе запрашиваем через VK API
-else {
-    $api_url = 'https://api.vk.com/method/users.get?' . http_build_query([
-        'user_ids' => $vk_user_id,
-        'fields' => 'photo_max_orig,bdate,city,sex,about',
-        'access_token' => $access_token,
-        'v' => VK_API_VERSION
-    ]);
-
-    $api_response = file_get_contents($api_url);
-    $api_data = json_decode($api_response, true);
-
-    // Отладочная информация
-    error_log("VK API Response: " . print_r($api_data, true));
-
-    if (!isset($api_data['response'][0])) {
-        // Выводим детальную ошибку для отладки
-        $error_msg = 'Ошибка получения данных пользователя из ВК.<br>';
-        if (isset($api_data['error'])) {
-            $error_msg .= 'Код ошибки: ' . $api_data['error']['error_code'] . '<br>';
-            $error_msg .= 'Описание: ' . $api_data['error']['error_msg'] . '<br>';
-        }
-        $error_msg .= '<br>Отладка:<br>';
-        $error_msg .= 'User ID: ' . htmlspecialchars($vk_user_id) . '<br>';
-        $error_msg .= 'Token (первые 20 символов): ' . htmlspecialchars(substr($access_token, 0, 20)) . '...<br>';
-        $error_msg .= '<br><a href="/auth/login.php">Вернуться к авторизации</a>';
-        die($error_msg);
-    }
-
-    $vk_user = $api_data['response'][0];
+} else {
+    // Если данных от SDK нет, создаём минимальную структуру
+    $vk_user = [
+        'id' => $vk_user_id,
+        'first_name' => 'Пользователь',
+        'last_name' => 'VK' . $vk_user_id
+    ];
+    error_log("VK ID SDK data not available, using minimal user data");
 }
 
 // Проверяем, существует ли пользователь в базе
@@ -187,6 +167,11 @@ $_SESSION['session_token'] = $session_token;
 $_SESSION['authenticated'] = true;
 
 // Перенаправляем на страницу профиля
+// Если это новый пользователь и данных мало, добавляем параметр для показа уведомления
+if (!$user && (!isset($vk_user['photo_max_orig']) || !isset($vk_user['bdate']))) {
+    $_SESSION['show_complete_profile_notice'] = true;
+}
+
 header('Location: /profile/edit.php');
 exit;
 

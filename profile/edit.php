@@ -19,6 +19,13 @@ if (!$user) {
 $message = '';
 $error = '';
 
+// Проверяем, нужно ли показать уведомление о завершении профиля
+$show_notice = false;
+if (isset($_SESSION['show_complete_profile_notice'])) {
+    $show_notice = true;
+    unset($_SESSION['show_complete_profile_notice']);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $first_name = trim($_POST['first_name'] ?? '');
     $last_name = trim($_POST['last_name'] ?? '');
@@ -333,6 +340,13 @@ $available_interests = [
                 <i class="fas fa-sign-out-alt"></i> Выйти
             </a>
         </div>
+
+        <?php if ($show_notice): ?>
+            <div class="message" style="background: #fff3cd; color: #856404; border: 1px solid #ffeaa7;">
+                <strong>👋 Добро пожаловать!</strong><br>
+                Пожалуйста, заполните ваш профиль: дата рождения, пол, город и интересы помогут найти вам подходящих людей.
+            </div>
+        <?php endif; ?>
 
         <?php if ($message): ?>
             <div class="message success"><?= htmlspecialchars($message) ?></div>
