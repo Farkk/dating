@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     // Пересчитываем рейтинг пользователя
                     $sql = "UPDATE users SET rating = (
-                                SELECT COALESCE(AVG(rating)::DECIMAL(3,2), 0.00)
+                                SELECT COALESCE(CAST(AVG(rating) AS DECIMAL(3,2)), 0.00)
                                 FROM meeting_reviews
                                 WHERE reviewed_user_id = :user_id
                             )
@@ -95,7 +95,7 @@ $reviews = executeQuery($sql, $params)->fetchAll();
 // Статистика по рейтингам
 $stats_sql = "SELECT
                 COUNT(*) as total,
-                AVG(rating)::DECIMAL(3,2) as avg_rating,
+                CAST(AVG(rating) AS DECIMAL(3,2)) as avg_rating,
                 COUNT(CASE WHEN rating = 5 THEN 1 END) as rating_5,
                 COUNT(CASE WHEN rating = 4 THEN 1 END) as rating_4,
                 COUNT(CASE WHEN rating = 3 THEN 1 END) as rating_3,

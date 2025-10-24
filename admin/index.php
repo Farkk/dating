@@ -37,7 +37,7 @@ $stmt = executeQuery($sql);
 $stats['likes'] = $stmt->fetch();
 
 // Статистика отзывов
-$sql = "SELECT COUNT(*) as total, AVG(rating)::DECIMAL(3,2) as avg_rating FROM meeting_reviews";
+$sql = "SELECT COUNT(*) as total, CAST(AVG(rating) AS DECIMAL(3,2)) as avg_rating FROM meeting_reviews";
 $stmt = executeQuery($sql);
 $stats['reviews'] = $stmt->fetch();
 
