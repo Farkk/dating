@@ -319,10 +319,10 @@ sort($interests);
         <nav class="nav">
             <div class="nav-logo animate__animated animate__fadeIn">Dating Site</div>
             <div class="nav-links">
-                <a href="../index.html" class="nav-link animate__animated animate__fadeIn">Главная</a>
+                <a href="../index.php" class="nav-link animate__animated animate__fadeIn">Главная</a>
                 <a href="#" class="nav-link animate__animated animate__fadeIn" style="font-weight: bold;">Найти пару</a>
-                <a href="../rating/index.html" class="nav-link animate__animated animate__fadeIn">Рейтинг</a>
-                <a href="../user/index.html" class="nav-link animate__animated animate__fadeIn">Профиль</a>
+                <a href="../rating/index.php" class="nav-link animate__animated animate__fadeIn">Рейтинг</a>
+                <a href="../user/index.php" class="nav-link animate__animated animate__fadeIn">Профиль</a>
             </div>
         </nav>
     </header>

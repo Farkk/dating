@@ -338,7 +338,7 @@ $users = executeQuery($sql, $params)->fetchAll();
         <nav class="nav">
             <div class="nav-logo animate__animated animate__fadeIn">Dating Site</div>
             <div class="nav-links">
-                <a href="../index.html" class="nav-link animate__animated animate__fadeIn">Главная</a>
+                <a href="../index.php" class="nav-link animate__animated animate__fadeIn">Главная</a>
                 <a href="../find/index.php" class="nav-link animate__animated animate__fadeIn">Найти пару</a>
                 <a href="index.php" class="nav-link animate__animated animate__fadeIn" style="font-weight: bold;">Рейтинг</a>
                 <a href="../user/index.php?id=7" class="nav-link animate__animated animate__fadeIn">Профиль</a>

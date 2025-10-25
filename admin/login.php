@@ -273,7 +273,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
 
         <div class="back-link">
-            <a href="../index.html">
+            <a href="../index.php">
                 <i class="fas fa-arrow-left"></i> Вернуться на главную
             </a>
         </div>
