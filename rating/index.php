@@ -393,7 +393,13 @@ $users = executeQuery($sql, $params)->fetchAll();
                 <div class="ranking-item animate__animated animate__fadeInUp" style="animation-delay: <?php echo $delay; ?>s">
                     <div class="ranking-position <?php echo $position_class; ?>"><?php echo $position; ?></div>
                     <div class="ranking-user">
-                        <img src="<?php echo htmlspecialchars($user['profile_photo']); ?>" alt="<?php echo htmlspecialchars($user['first_name']); ?>" class="ranking-avatar">
+                        <?php if (!empty($user['profile_photo'])): ?>
+                            <img src="/<?php echo htmlspecialchars($user['profile_photo']); ?>" alt="<?php echo htmlspecialchars($user['first_name']); ?>" class="ranking-avatar">
+                        <?php else: ?>
+                            <div class="ranking-avatar" style="background: #e0e0e0; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-user" style="color: #999;"></i>
+                            </div>
+                        <?php endif; ?>
                         <div class="ranking-details">
                             <div class="ranking-name"><?php echo htmlspecialchars($user['first_name']); ?></div>
                             <div class="ranking-stats">

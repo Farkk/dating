@@ -400,7 +400,13 @@ sort($interests);
             <?php else: ?>
                 <?php foreach ($users as $index => $user): ?>
                     <div class="card animate__animated animate__fadeInUp" style="animation-delay: <?= 0.1 * $index ?>s">
-                        <img src="<?= htmlspecialchars($user['profile_photo']) ?>" alt="<?= htmlspecialchars($user['first_name']) ?>" class="card-image">
+                        <?php if (!empty($user['profile_photo'])): ?>
+                            <img src="/<?= htmlspecialchars($user['profile_photo']) ?>" alt="<?= htmlspecialchars($user['first_name']) ?>" class="card-image">
+                        <?php else: ?>
+                            <div class="card-image" style="background: #e0e0e0; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-user" style="font-size: 60px; color: #999;"></i>
+                            </div>
+                        <?php endif; ?>
                         <div class="card-content">
                             <h2 class="card-title"><?= htmlspecialchars($user['first_name']) ?></h2>
                             <div class="card-stats">
@@ -798,9 +804,10 @@ sort($interests);
             // Отображение информации о пользователе в модальном окне
             function displayUserInfo(data) {
                 const user = data.user;
-                
+
                 // Заполняем информацию о пользователе
-                document.querySelector('.modal-user-photo').src = user.profile_photo;
+                const photoPath = user.profile_photo && !user.profile_photo.startsWith('/') ? '/' + user.profile_photo : user.profile_photo;
+                document.querySelector('.modal-user-photo').src = photoPath || '/images/default-avatar.png';
                 document.querySelector('.modal-user-photo').alt = user.first_name;
                 document.querySelector('.modal-user-name').textContent = `${user.first_name} ${user.last_name}`;
                 

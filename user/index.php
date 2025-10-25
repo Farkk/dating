@@ -349,7 +349,13 @@ if ($user['interests']) {
     <main class="main">
         <div class="profile animate__animated animate__fadeIn">
             <div class="profile-sidebar">
-                <img src="<?php echo htmlspecialchars($user['profile_photo']); ?>" alt="<?php echo htmlspecialchars($user['first_name']); ?>" class="profile-photo animate__animated animate__zoomIn">
+                <?php if (!empty($user['profile_photo'])): ?>
+                    <img src="/<?php echo htmlspecialchars($user['profile_photo']); ?>" alt="<?php echo htmlspecialchars($user['first_name']); ?>" class="profile-photo animate__animated animate__zoomIn">
+                <?php else: ?>
+                    <div class="profile-photo animate__animated animate__zoomIn" style="background: #e0e0e0; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-user" style="font-size: 80px; color: #999;"></i>
+                    </div>
+                <?php endif; ?>
                 <h1 class="profile-name animate__animated animate__fadeIn"><?php echo htmlspecialchars($user['first_name']); ?></h1>
 
                 <div class="profile-stat animate__animated animate__fadeInLeft" style="animation-delay: 0.2s">
@@ -400,9 +406,13 @@ if ($user['interests']) {
                 </div>
                 <?php endif; ?>
 
-                <div style="margin-top: 2rem; display: flex; gap: 1rem;">
-                    <a href="../admin/user_edit.php?id=<?php echo $user['id']; ?>" class="btn animate__animated animate__fadeIn" style="animation-delay: 0.7s">Редактировать профиль</a>
-                </div>
+                <?php if ($user['id'] == $current_user_id): ?>
+                    <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                        <a href="/profile/edit.php" class="btn animate__animated animate__fadeIn" style="animation-delay: 0.7s">
+                            <i class="fas fa-edit"></i> Редактировать профиль
+                        </a>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </main>
