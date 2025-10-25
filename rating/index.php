@@ -1,6 +1,16 @@
 <?php
+// Проверка авторизации
+session_start();
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['authenticated'])) {
+    header('Location: /auth/login.php');
+    exit;
+}
+
 // Подключение к базе данных
 require_once '../config/db.php';
+
+// ID текущего авторизованного пользователя
+$current_user_id = $_SESSION['user_id'];
 
 // Функция для вычисления возраста
 function calculateAge($birthdate) {
@@ -341,7 +351,7 @@ $users = executeQuery($sql, $params)->fetchAll();
                 <a href="../index.php" class="nav-link animate__animated animate__fadeIn">Главная</a>
                 <a href="../find/index.php" class="nav-link animate__animated animate__fadeIn">Найти пару</a>
                 <a href="index.php" class="nav-link animate__animated animate__fadeIn" style="font-weight: bold;">Рейтинг</a>
-                <a href="../user/index.php?id=7" class="nav-link animate__animated animate__fadeIn">Профиль</a>
+                <a href="../user/index.php?id=<?php echo $current_user_id; ?>" class="nav-link animate__animated animate__fadeIn">Профиль</a>
             </div>
         </nav>
     </header>

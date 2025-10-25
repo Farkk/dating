@@ -1,6 +1,16 @@
 <?php
+// Проверка авторизации
+session_start();
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['authenticated'])) {
+    header('Location: /auth/login.php');
+    exit;
+}
+
 // Подключение к базе данных
 require_once '../config/db.php';
+
+// ID текущего авторизованного пользователя
+$current_user_id = $_SESSION['user_id'];
 
 // Функция для вычисления возраста
 function calculateAge($birthdate) {
@@ -19,8 +29,8 @@ function pluralize($number, $one, $few, $many) {
     return $many;
 }
 
-// Получаем ID пользователя из параметра URL (по умолчанию 7 - Анастасия)
-$user_id = isset($_GET['id']) ? (int)$_GET['id'] : 7;
+// Получаем ID пользователя из параметра URL (по умолчанию - текущий авторизованный пользователь)
+$user_id = isset($_GET['id']) ? (int)$_GET['id'] : $current_user_id;
 
 // Получаем данные пользователя
 $sql = "SELECT
@@ -331,7 +341,7 @@ if ($user['interests']) {
                 <a href="../index.php" class="nav-link animate__animated animate__fadeIn">Главная</a>
                 <a href="../find/index.php" class="nav-link animate__animated animate__fadeIn">Найти пару</a>
                 <a href="../rating/index.php" class="nav-link animate__animated animate__fadeIn">Рейтинг</a>
-                <a href="index.php?id=7" class="nav-link animate__animated animate__fadeIn" style="font-weight: bold;">Профиль</a>
+                <a href="index.php?id=<?php echo $current_user_id; ?>" class="nav-link animate__animated animate__fadeIn" style="font-weight: bold;">Профиль</a>
             </div>
         </nav>
     </header>

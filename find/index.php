@@ -1,13 +1,23 @@
 <?php
+// Проверка авторизации
+session_start();
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['authenticated'])) {
+    header('Location: /auth/login.php');
+    exit;
+}
+
 // Подключение к базе данных
 require_once '../config/db.php';
 
-// Получение списка пользователей для отображения
-$sql = "SELECT id, first_name, date_of_birth, gender, city, bio, profile_photo, rating, interests 
-        FROM users 
-        WHERE is_active = TRUE 
+// ID текущего авторизованного пользователя
+$current_user_id = $_SESSION['user_id'];
+
+// Получение списка пользователей для отображения (исключаем текущего пользователя)
+$sql = "SELECT id, first_name, date_of_birth, gender, city, bio, profile_photo, rating, interests
+        FROM users
+        WHERE is_active = TRUE AND id != :current_user_id
         ORDER BY rating DESC";
-$users = executeQuery($sql)->fetchAll();
+$users = executeQuery($sql, [':current_user_id' => $current_user_id])->fetchAll();
 
 // Вычисление возраста на основе даты рождения
 function calculateAge($birthdate) {
@@ -25,18 +35,18 @@ $search_interest = isset($_GET['interest']) ? $_GET['interest'] : null;
 
 // Если есть поисковые параметры, обновляем запрос
 if ($search_gender || $search_city || $search_interest) {
-    $sql = "SELECT id, first_name, date_of_birth, gender, city, bio, profile_photo, rating, interests 
-            FROM users 
-            WHERE is_active = TRUE";
-    
-    $params = [];
-    
+    $sql = "SELECT id, first_name, date_of_birth, gender, city, bio, profile_photo, rating, interests
+            FROM users
+            WHERE is_active = TRUE AND id != :current_user_id";
+
+    $params = [':current_user_id' => $current_user_id];
+
     // Фильтрация по полу
     if ($search_gender) {
         $sql .= " AND gender = :gender";
         $params[':gender'] = $search_gender;
     }
-    
+
     // Фильтрация по городу
     if ($search_city) {
         $sql .= " AND city LIKE :city";
@@ -48,9 +58,9 @@ if ($search_gender || $search_city || $search_interest) {
         $sql .= " AND JSON_CONTAINS(interests, :interest)";
         $params[':interest'] = json_encode($search_interest);
     }
-    
+
     // Фильтрация по возрасту делается в PHP, так как возраст вычисляется
-    
+
     $sql .= " ORDER BY rating DESC";
     $stmt = executeQuery($sql, $params);
     $users = $stmt->fetchAll();
@@ -322,7 +332,7 @@ sort($interests);
                 <a href="../index.php" class="nav-link animate__animated animate__fadeIn">Главная</a>
                 <a href="#" class="nav-link animate__animated animate__fadeIn" style="font-weight: bold;">Найти пару</a>
                 <a href="../rating/index.php" class="nav-link animate__animated animate__fadeIn">Рейтинг</a>
-                <a href="../user/index.php" class="nav-link animate__animated animate__fadeIn">Профиль</a>
+                <a href="../user/index.php?id=<?php echo $current_user_id; ?>" class="nav-link animate__animated animate__fadeIn">Профиль</a>
             </div>
         </nav>
     </header>
