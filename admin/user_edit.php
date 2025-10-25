@@ -26,12 +26,15 @@ if ($is_edit_mode) {
         exit;
     }
 
-    // Преобразуем массив интересов из PostgreSQL в строку
+    // Преобразуем массив интересов из JSON (MySQL) в строку
     if ($user['interests']) {
-        // Убираем фигурные скобки и кавычки из PostgreSQL array
-        $interests_string = trim($user['interests'], '{}');
-        $interests_string = str_replace('"', '', $interests_string);
-        $user['interests_string'] = $interests_string;
+        // Декодируем JSON массив
+        $interests_array = json_decode($user['interests'], true);
+        if (is_array($interests_array)) {
+            $user['interests_string'] = implode(', ', $interests_array);
+        } else {
+            $user['interests_string'] = '';
+        }
     } else {
         $user['interests_string'] = '';
     }
@@ -80,12 +83,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $validation_errors['gender'] = 'Пол обязателен';
         }
 
-        // Обработка интересов - преобразуем в массив PostgreSQL
+        // Обработка интересов - преобразуем в массив для JSON (MySQL)
         $interests_array = [];
         if (!empty($interests_input)) {
             $interests_array = array_map('trim', explode(',', $interests_input));
             $interests_array = array_filter($interests_array); // Убираем пустые элементы
         }
+        $interests_json = !empty($interests_array) ? json_encode($interests_array, JSON_UNESCAPED_UNICODE) : null;
 
         if (empty($validation_errors)) {
             try {
@@ -114,9 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'gender' => $gender,
                         'city' => $city,
                         'bio' => $bio,
-                        'interests' => '{' . implode(',', array_map(function($item) {
-                            return '"' . str_replace('"', '""', $item) . '"';
-                        }, $interests_array)) . '}',
+                        'interests' => $interests_json,
                         'rating' => $rating,
                         'is_active' => $is_active,
                     ];
@@ -157,9 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'gender' => $gender,
                         'city' => $city,
                         'bio' => $bio,
-                        'interests' => '{' . implode(',', array_map(function($item) {
-                            return '"' . str_replace('"', '""', $item) . '"';
-                        }, $interests_array)) . '}',
+                        'interests' => $interests_json,
                         'rating' => $rating,
                         'is_active' => $is_active,
                     ];

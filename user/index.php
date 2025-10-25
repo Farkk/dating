@@ -50,12 +50,14 @@ if (!$user) {
 $age = calculateAge($user['date_of_birth']);
 $rating_display = $user['rating'] > 0 ? number_format($user['rating'], 1) . '/5' : 'Нет оценок';
 
-// Парсим массив интересов из PostgreSQL
+// Парсим массив интересов из JSON (MySQL)
 $interests = [];
 if ($user['interests']) {
-    // PostgreSQL возвращает массив в формате {Interest1,Interest2,Interest3}
-    $interests_string = trim($user['interests'], '{}');
-    $interests = explode(',', $interests_string);
+    // MySQL хранит интересы в формате JSON
+    $decoded = json_decode($user['interests'], true);
+    if (is_array($decoded)) {
+        $interests = $decoded;
+    }
 }
 ?>
 <!DOCTYPE html>

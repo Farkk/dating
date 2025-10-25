@@ -79,18 +79,16 @@ $total_pages = ceil($total_meetings / $per_page);
 
 // Получение списка встреч
 $sql = "SELECT m.id, m.user1_id, m.user2_id, m.status, m.meeting_date, m.location, m.notes, m.created_at,
-               u1.first_name || ' ' || u1.last_name as user1_name,
+               CONCAT(u1.first_name, ' ', u1.last_name) as user1_name,
                u1.username as user1_username,
-               u2.first_name || ' ' || u2.last_name as user2_name,
+               CONCAT(u2.first_name, ' ', u2.last_name) as user2_name,
                u2.username as user2_username
         FROM meetings m
         JOIN users u1 ON m.user1_id = u1.id
         JOIN users u2 ON m.user2_id = u2.id
         $where_clause
         ORDER BY m.meeting_date DESC
-        LIMIT :limit OFFSET :offset";
-$params['limit'] = $per_page;
-$params['offset'] = $offset;
+        LIMIT " . (int)$per_page . " OFFSET " . (int)$offset;
 $meetings = executeQuery($sql, $params)->fetchAll();
 
 // Статистика по статусам

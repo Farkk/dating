@@ -75,10 +75,10 @@ $total_pages = ceil($total_reviews / $per_page);
 // Получение списка отзывов
 $sql = "SELECT mr.id, mr.meeting_id, mr.rating, mr.comments, mr.created_at,
                reviewer.id as reviewer_id,
-               reviewer.first_name || ' ' || reviewer.last_name as reviewer_name,
+               CONCAT(reviewer.first_name, ' ', reviewer.last_name) as reviewer_name,
                reviewer.username as reviewer_username,
                reviewed.id as reviewed_id,
-               reviewed.first_name || ' ' || reviewed.last_name as reviewed_name,
+               CONCAT(reviewed.first_name, ' ', reviewed.last_name) as reviewed_name,
                reviewed.username as reviewed_username,
                m.meeting_date, m.location
         FROM meeting_reviews mr
@@ -87,9 +87,7 @@ $sql = "SELECT mr.id, mr.meeting_id, mr.rating, mr.comments, mr.created_at,
         JOIN meetings m ON mr.meeting_id = m.id
         $where_clause
         ORDER BY mr.created_at DESC
-        LIMIT :limit OFFSET :offset";
-$params['limit'] = $per_page;
-$params['offset'] = $offset;
+        LIMIT " . (int)$per_page . " OFFSET " . (int)$offset;
 $reviews = executeQuery($sql, $params)->fetchAll();
 
 // Статистика по рейтингам

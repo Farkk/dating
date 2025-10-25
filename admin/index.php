@@ -50,8 +50,8 @@ $recent_users = executeQuery($sql)->fetchAll();
 
 // Ближайшие встречи
 $sql = "SELECT m.id, m.meeting_date, m.location, m.status,
-               u1.first_name || ' ' || u1.last_name as user1_name,
-               u2.first_name || ' ' || u2.last_name as user2_name
+               CONCAT(u1.first_name, ' ', u1.last_name) as user1_name,
+               CONCAT(u2.first_name, ' ', u2.last_name) as user2_name
         FROM meetings m
         JOIN users u1 ON m.user1_id = u1.id
         JOIN users u2 ON m.user2_id = u2.id

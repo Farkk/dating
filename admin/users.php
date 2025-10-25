@@ -75,7 +75,7 @@ $where_conditions = [];
 $params = [];
 
 if (!empty($search)) {
-    $where_conditions[] = "(first_name ILIKE :search OR last_name ILIKE :search OR email ILIKE :search OR username ILIKE :search)";
+    $where_conditions[] = "(first_name LIKE :search OR last_name LIKE :search OR email LIKE :search OR username LIKE :search)";
     $params['search'] = '%' . $search . '%';
 }
 
@@ -110,9 +110,7 @@ $sql = "SELECT id, username, email, first_name, last_name, date_of_birth, gender
         FROM users
         $where_clause
         ORDER BY created_at DESC
-        LIMIT :limit OFFSET :offset";
-$params['limit'] = $per_page;
-$params['offset'] = $offset;
+        LIMIT " . (int)$per_page . " OFFSET " . (int)$offset;
 $users = executeQuery($sql, $params)->fetchAll();
 
 // Получение списка городов для фильтра
